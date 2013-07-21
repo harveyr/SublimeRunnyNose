@@ -2,5 +2,9 @@
     {
         "caption": "RunnyNose: Run Test",
         "command": "runny_nose"
+    },
+    {
+        "caption": "RunnyNose: Show Test Panel",
+        "command": "runny_nose_show_panel"
     }
 ]

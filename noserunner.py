@@ -1,10 +1,15 @@
-import sys
 import os
 import re
 import sublime
 import sublime_plugin
 import subprocess
 import datetime
+
+
+class RunnyNoseShowPanelCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        sublime.active_window.run_command(
+            'show_panel', {'panel': 'output.nosetest_panel'})
 
 
 class RunnyNoseCommand(sublime_plugin.TextCommand):
