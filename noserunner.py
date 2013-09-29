@@ -13,7 +13,6 @@ class RunnyNoseShowPanelCommand(sublime_plugin.TextCommand):
 
 
 class RunnyNoseCommand(sublime_plugin.TextCommand):
-
     @property
     def current_scope(self):
         return self.view.scope_name(self.view.sel()[0].begin())
@@ -32,6 +31,9 @@ class RunnyNoseCommand(sublime_plugin.TextCommand):
             sublime.Region(0, self.view.size()))
 
         method = self.get_test_method()
+        if not method:
+            print("RunnyNose: No test method found.")
+            return
 
         cmd = "{venv};nosetests {file}:{cls}.{method}".format(
             venv=self.get_virtualenv_source_cmd(),
@@ -50,15 +52,13 @@ class RunnyNoseCommand(sublime_plugin.TextCommand):
         p = subprocess.Popen(
             cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
-        if out:
-            panel.insert(edit, panel.size(), ('\n' + out.decode('utf-8')))
-        if err:
-            panel.insert(edit, panel.size(), ('\n' + err.decode('utf-8')))
+        panel.insert(
+            edit,
+            panel.size(),
+            '\n{}\n{}'.format(err.decode('utf-8'), out.decode('utf-8')))
 
     def get_class(self):
-        class_search = re.search(
-            r'class (\w+)\(',
-            self.view_contents)
+        class_search = re.search(r'class (\w+)\(', self.view_contents)
         if class_search:
             return class_search.groups(0)[0]
         else:
@@ -71,17 +71,16 @@ class RunnyNoseCommand(sublime_plugin.TextCommand):
                 re.findall(r'\s*def (test\w*)\(', contents) if h]
         if len(hits) > 0:
             return hits[-1]
+        return False
 
     def get_virtualenv_source_cmd(self):
         paths = self.path.split('/')
-
         for i in range(len(paths)):
             path = '/'.join(paths[:-i])
             if not path:
                 continue
             subpaths = [o for o in os.listdir(path) if
                         os.path.isdir(os.path.join(path, o))]
-
             if 'bin' in subpaths:
                 bin_path = os.path.join(path, 'bin')
                 if 'activate' in os.listdir(bin_path):
