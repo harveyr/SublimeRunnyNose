@@ -23,16 +23,22 @@ class RunnyNoseCommand(sublime_plugin.TextCommand):
             print('RunnyNose: Ignoring non-Python file ' + test_file)
             return
 
-        parts = os.path.split(test_file)
-        self.path = parts[0]
-        self.file_name = parts[1]
+        head, tail = os.path.split(test_file)
+        self.path = head
+        self.file_name = tail
 
         self.view_contents = self.view.substr(
-            sublime.Region(0, self.view.size()))
+            sublime.Region(0, self.view.size())
+        )
 
         method = self.get_test_method()
         if not method:
             print("RunnyNose: No test method found.")
+            return
+
+        venv_cmd = self.get_virtualenv_source_cmd()
+        if not venv_cmd:
+            print("Couldn't find bin/activate")
             return
 
         cmd = "{venv};nosetests {file}:{cls}.{method}".format(
@@ -74,9 +80,19 @@ class RunnyNoseCommand(sublime_plugin.TextCommand):
         return False
 
     def get_virtualenv_source_cmd(self):
-        paths = self.path.split('/')
-        for i in range(len(paths)):
-            path = '/'.join(paths[:-i])
+        """
+        Finds bin/activate and returns the command to source it.
+
+        This feels hacky, and I think there's a way to activate the virtualenv
+        programmatically. However, I'm concerned about the side effects of
+        doing that within a Sublime plugin.
+        """
+
+        path_parts = self.path.split('/')
+        search_paths = ['.']
+        for i in range(len(path_parts)):
+            search_paths.append('/'.join(path_parts[:-i]))
+        for path in search_paths:
             if not path:
                 continue
             subpaths = [o for o in os.listdir(path) if
