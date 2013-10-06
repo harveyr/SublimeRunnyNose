@@ -58,10 +58,12 @@ class RunnyNoseCommand(sublime_plugin.TextCommand):
         p = subprocess.Popen(
             cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
+        result = err.decode('utf-8') + out.decode('utf-8')
         panel.insert(
             edit,
             panel.size(),
-            '\n{}\n{}'.format(err.decode('utf-8'), out.decode('utf-8')))
+            result
+        )
 
     def get_class(self):
         class_search = re.search(r'class (\w+)\(', self.view_contents)
