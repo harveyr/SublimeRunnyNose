@@ -59,6 +59,9 @@ class RunnyNoseCommand(sublime_plugin.TextCommand):
             cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         result = err.decode('utf-8') + out.decode('utf-8')
+        if result[0] == '.':
+            result = result[1:]
+        print('result: {0}'.format(result))
         panel.insert(
             edit,
             panel.size(),
