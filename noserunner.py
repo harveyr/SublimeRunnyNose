@@ -74,7 +74,7 @@ class RunnyNoseCommand(sublime_plugin.TextCommand):
         line = self.view.line(self.view.sel()[0])
         contents = self.view.substr(sublime.Region(0, line.end()))
         hits = [h for h in
-                re.findall(r'\s*def (test\w*)\(', contents) if h]
+                re.findall(r'\s*def (test\w*)\(', contents)]
         if len(hits) > 0:
             return hits[-1]
         return False
